@@ -1,20 +1,53 @@
-// components/Signup.js
 import React, { useState } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 
 function Signup() {
     const [username, setUsername] = useState('');
     const [fullname, setFullname] = useState('');
     const [password, setPassword] = useState('');
     const [confirmPassword, setConfirmPassword] = useState('');
+    const [error, setError] = useState('');
+    const [success, setSuccess] = useState('');
 
-    const handleSubmit = (e) => {
+    const navigate = useNavigate();
+
+    const handleSubmit = async (e) => {
         e.preventDefault();
+
         if (password !== confirmPassword) {
-            alert('Passwords do not match');
-        } else {
-            // Call API to create new user
-            console.log('New user created:', { username, fullname, password });
+            setError('Passwords do not match');
+            setSuccess('');
+            return;
+        }
+
+        const userData = {
+            username,
+            fullName: fullname,
+            password,
+        };
+
+        try {
+            const response = await fetch('https://localhost:7140/api/User/Add', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(userData),
+            });
+
+            if (response.ok) {
+                const data = await response.text();
+                alert(data);
+                setSuccess('Signup successful!');
+                navigate('/login');
+            } else {
+                const data = await response.json();
+                setError(data.message || 'Invalid signup data');
+                setSuccess('');
+            }
+        } catch (err) {
+            setError('An error occurred while signing up');
+            setSuccess('');
         }
     };
 
@@ -63,21 +96,21 @@ function Signup() {
                             className="block w-full p-2 border border-gray-300 rounded-lg"
                         />
                     </div>
-                    <Link to ="/">
                     <button
                         type="submit"
                         className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded-lg hover:cursor-pointer"
                     >
                         Signup
                     </button>
+                    <Link to="/">
+                        <button
+                            className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded-lg ml-5 hover:cursor-pointer"
+                        >
+                            Back
+                        </button>
                     </Link>
-                    <Link to ="/">
-                    <button
-                        className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded-lg ml-5 hover:cursor-pointer"
-                    >
-                        Back
-                    </button>
-                    </Link>
+                    {error && <p style={{ color: "red" }}>{error}</p>}
+                    {success && <p style={{ color: "green" }}>{success}</p>}
                 </form>
             </div>
         </div>

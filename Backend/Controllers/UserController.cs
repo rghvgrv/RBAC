@@ -5,6 +5,7 @@ using SampleOAuth.Repos.Interfaces;
 
 namespace SampleOAuth.Controllers
 {
+    [Authorize]
     [ApiController]
     [Route("api/[controller]")]
     public class UserController : Controller
@@ -40,6 +41,21 @@ namespace SampleOAuth.Controllers
         public IActionResult GetDetails(int id)
         {
             return Ok(_userRepository.GetUserDetailByRole(id));
+        }
+
+        [HttpPut]
+        [Route("Update/{username}")]
+        public IActionResult Update([FromBody] CreateUserDTO userDTO,string username)
+        {
+            _userRepository.UpdateUser(userDTO,username);
+            return Ok("User Updated Successfully");
+        }
+
+        [HttpGet]
+        [Route("GetDetailsByUserName/{username}")]
+        public IActionResult GetDetailsByUserName(string username)
+        {
+            return Ok(_userRepository.GetUserDetailsByUserName(username));
         }
     }
 }

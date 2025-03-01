@@ -45,7 +45,27 @@ namespace SampleOAuth.Services
         }
         public bool ValidateToken(string token)
         {
-            throw new NotImplementedException();
+            var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(token));
+            var createToken = new TokenValidationParameters
+            {
+                ValidateIssuer = true,
+                ValidateAudience = true,
+                ValidateLifetime = true,
+                ValidateIssuerSigningKey = true,
+                ValidIssuer = _issuer,
+                ValidAudience = _audience,
+                IssuerSigningKey = key
+            };
+
+            var output = new JwtSecurityTokenHandler().ValidateToken(token, createToken, out var validatedToken);
+
+            if (output.Identity.IsAuthenticated)
+            {
+                return true;
+            }
+
+            return false;
+
         }
 
         public string GetUserIdFromToken(string token)

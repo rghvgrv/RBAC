@@ -30,14 +30,14 @@ namespace SampleOAuth.Controllers
 
             if (loginuser == null)
             {
-                return BadRequest("Invalid username");
+                return Unauthorized("Invalid username");
             }
 
             userDTO.Password = _jwtService.HashPassword(userDTO.Password);
 
             if (loginuser.PasswordHash != userDTO.Password)
             {
-                return BadRequest("Invalid password");
+                return Unauthorized("Invalid password");
             }
 
             var loginActivity = new Auth
@@ -61,7 +61,8 @@ namespace SampleOAuth.Controllers
             {
                 Token = token,
                 Message = "Login successful",
-                Name = loginuser.FullName
+                Name = loginuser.FullName,
+                Id = loginuser.UserId
             });
         }
 
