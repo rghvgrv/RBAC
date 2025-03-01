@@ -51,7 +51,19 @@ namespace SampleOAuth.Controllers
             var result = await _userDBContext.Auth.AddAsync(loginActivity);
             await _userDBContext.SaveChangesAsync();
 
-            var token = _jwtService.GenerateToken(loginActivity.AuthId);
+            //Role of the user 
+            var role = _userDBContext.Permissions.FirstOrDefault(x => x.UserId == loginuser.UserId);
+            string roleType;
+            if(role.RoleId == 1)
+            {
+                roleType = "ADMIN";
+            }
+            else
+            {
+                roleType = "USER";
+            }
+
+            var token = _jwtService.GenerateToken(loginActivity.AuthId, role.RoleId);
 
             loginActivity.Token = token;
 
@@ -62,7 +74,8 @@ namespace SampleOAuth.Controllers
                 Token = token,
                 Message = "Login successful",
                 Name = loginuser.FullName,
-                Id = loginuser.UserId
+                Id = loginuser.UserId,
+                Role = roleType
             });
         }
 
@@ -88,6 +101,32 @@ namespace SampleOAuth.Controllers
 
             await _userDBContext.SaveChangesAsync();
             return Ok("Logout successful");
+        }
+
+        [HttpGet]
+        [Route("ValidateToken")]
+        public async Task<IActionResult> ValidateToken()
+        {
+            var token = Request.Headers["Authorization"].ToString().Replace("Bearer ", "");
+            if (string.IsNullOrEmpty(token))
+            {
+                return Unauthorized("Authorization token is missing.");
+            }
+            var authIdClaim = _jwtService.GetUserIdFromToken(token);
+            var roleIdClaim = _jwtService.GetRoleIdFromToken(token);
+            if (authIdClaim == null || roleIdClaim == null)
+            {
+                return Unauthorized("Invalid token.");
+            }
+
+            var authId = int.Parse(authIdClaim);
+            var roleId = int.Parse(roleIdClaim);
+
+
+            return Ok(new
+            {
+                Role = roleId
+            });
         }
 
     }

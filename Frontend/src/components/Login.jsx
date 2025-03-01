@@ -28,12 +28,13 @@ function Login() {
                 localStorage.setItem('token', data.token);
                 localStorage.setItem('username', data.name);
                 localStorage.setItem('id', data.id);
+                localStorage.setItem('role', data.role);
                 setSuccess('Login successful!');
                 setError('');
                 navigate(`/about`);
             } else if (response.status === 401) {
                 setError('Unauthorized: Invalid username or password');
-                setSuccess('');                 
+                setSuccess('');
             } else {
                 const data = await response.json();
                 setError(data.message || 'Invalid login or password');

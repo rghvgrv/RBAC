@@ -22,11 +22,12 @@ namespace SampleOAuth.Services
             _expiryInMinutes = Convert.ToInt32(configuration["Jwt:ExpiryInMinutes"]);
         }
 
-        public string GenerateToken(int id)
+        public string GenerateToken(int id,int roleid)
         {
             var claims = new[]
             {
                 new Claim("id", id.ToString()),
+                new Claim("roleid",roleid.ToString()),
                 new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString())
             };
 
@@ -63,7 +64,6 @@ namespace SampleOAuth.Services
             {
                 return true;
             }
-
             return false;
 
         }
@@ -74,6 +74,14 @@ namespace SampleOAuth.Services
             var securityToken = tokenHandler.ReadToken(token) as JwtSecurityToken;
             var userId = securityToken?.Claims.First(claim => claim.Type == "id").Value;
             return userId;
+        }
+
+        public string GetRoleIdFromToken(string token)
+        {
+            var tokenHandler = new JwtSecurityTokenHandler();
+            var securityToken = tokenHandler.ReadToken(token) as JwtSecurityToken;
+            var roleId = securityToken?.Claims.First(claim => claim.Type == "roleid").Value;
+            return roleId;
         }
         public string HashPassword(string password)
         {

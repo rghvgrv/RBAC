@@ -37,6 +37,14 @@ namespace SampleOAuth.Middleware
                         return;
                     }
 
+                    var roleIdClaim = _jwtService.GetRoleIdFromToken(token);
+                    if(roleIdClaim == null || !int.TryParse(roleIdClaim, out int roleid))
+                    {
+                        context.Response.StatusCode = StatusCodes.Status401Unauthorized;
+                        await context.Response.WriteAsync("Invalid token.");
+                        return;
+                    }
+
                     var session = _userDbContext.Auth.FirstOrDefault(u => u.AuthId == authid);
                     if (session == null)
                     {
@@ -49,7 +57,7 @@ namespace SampleOAuth.Middleware
                     if (!_jwtService.ValidateToken(token))
                     {
                         // Token expired but session is still active -> Issue a new token
-                        var newToken = _jwtService.GenerateToken(authid);
+                        var newToken = _jwtService.GenerateToken(authid,roleid);
 
                         context.Response.Headers.Add("New-Token", newToken);
                     }
